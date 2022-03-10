@@ -1,7 +1,7 @@
 
 = Clojure Spec Demo
 
-A simple live-code demo for Clojure Spec
+A simple live-code demo for Clojure Spec.  Derived from the link:https://clojure.org/guides/spec[Clojure Spec Guide]
 
 see namespace `tst.demo.core`
 
