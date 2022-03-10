@@ -1,0 +1,12 @@
+
+= Clojure Spec Demo
+
+A simple live-code demo for Clojure Spec
+
+see namespace `tst.demo.core`
+
+== License
+
+Copyright © 2022  Alan Thompson
+
+Distributed under the link:https://www.eclipse.org/legal/epl-v10.html[Eclipse Public License], the same as Clojure.
