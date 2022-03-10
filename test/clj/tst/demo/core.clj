@@ -382,7 +382,14 @@
                             ::hand  [[2 :hurts]]}))
 
   ; Create a generator for ::player, generate a single sample value, and verify it is valid
-  (is (s/valid? ::player (gen/generate (s/gen ::player)))))
+  (is (s/valid? ::player (gen/generate (s/gen ::player))))
+
+  ; s/generate returns a single entity; s/sample returns multiple entity
+  (when false
+    (nl)
+    (spyx-pretty (gen/generate (s/gen ::player)))
+    (nl)
+    (spyx-pretty (gen/sample (s/gen ::player)))))
 
 ;-----------------------------------------------------------------------------
 ; examples from: Clojure spec Screencast - Customizing Generators: https://youtu.be/WoFkhE92fqc
