@@ -3,14 +3,14 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [
-                 [com.cognitect.aws/api "0.8.539"]
-                 [com.cognitect.aws/endpoints "1.1.12.168"]
-                 [com.cognitect.aws/s3 "820.2.1083.0"]
-                 [org.clojure/clojure "1.10.3"]
-                 [org.clojure/spec.alpha "0.3.218"]
+                 [com.cognitect.aws/api "0.8.711"]
+                 [com.cognitect.aws/endpoints "1.1.12.772"]
+                 [com.cognitect.aws/s3 "869.2.1687.0"]
+                 [org.clojure/clojure "1.12.0"]
+                 [org.clojure/spec.alpha "0.5.238"]
                  [org.clojure/test.check "1.1.1"]
-                 [prismatic/schema "1.2.0"]
-                 [tupelo "22.03.09"]
+                 [prismatic/schema "1.4.1"]
+                 [tupelo "24.12.03b"]
                  ]
   :plugins [
             [com.jakemccrary/lein-test-refresh "0.25.0"]

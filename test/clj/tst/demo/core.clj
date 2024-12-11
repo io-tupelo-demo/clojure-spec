@@ -14,7 +14,7 @@
     [java.time Instant]
     ))
 
-(dotest
+(verify
   ; s/valid? returns true/false
   (is= true (s/valid? even? 4)) ; NOTE: normally just use (is   (s/valid? ...))
   (is= false (s/valid? even? 5)) ; NOTE: normally just use (isnt (s/valid? ...))
@@ -92,7 +92,7 @@
       (is (s/valid? (s/every int? :min-count 2 :max-count 5) ints-4))
       (isnt (s/valid? (s/every int? :min-count 2 :max-count 3) ints-4)))))
 
-(dotest
+(verify
   ; defined & use named specs
   (s/def ::date inst?)
   (s/def ::suit #{:club :diamond :heart :spade})
@@ -140,7 +140,7 @@
   ;                       :value :foo})
   )
 
-(dotest
+(verify
   ; define specs for individual values
   (def email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
   (s/def ::email-type (s/and string? #(re-matches email-regex %))) ; can use any predicate fn
@@ -182,7 +182,7 @@
         (s/conform :unqual/person (->Person "Elon" "Musk" "elon@example.com" nil)) ; returns a Person record
         {:first-name "Elon", :last-name "Musk", :email "elon@example.com", :phone nil})))
 
-(dotest
+(verify
   (s/def ::id keyword?)
   (s/def ::host string?)
   (s/def ::port number?)
@@ -193,7 +193,7 @@
   (is= (s/conform ::server [::id :s1 ::host "example.com" ::port 5555]) ; seq as input instead of a map
     {::id :s1, ::host "example.com", ::port 5555}))
 
-(dotest             ; can merge 2 specs to generate a combined spec
+(verify             ; can merge 2 specs to generate a combined spec
   (s/def :animal/kind string?)
   (s/def :animal/says string?)
   (s/def :animal/common (s/keys :req [:animal/kind :animal/says])) ; common keys for any animal
@@ -206,7 +206,7 @@
                              :dog/tail?   true
                              :dog/breed   "retriever"})))
 
-(dotest
+(verify
   (s/def :event/type keyword?)
   (s/def :event/timestamp int?)
   (s/def :search/url string?)
@@ -257,7 +257,7 @@
     (s/def ::scores (s/map-of string? int?)) ; every entry is string -> int
     (is= (s/conform ::scores {"Sally" 1000 "joe" 500}) {"Sally" 1000 "joe" 500})))
 
-(dotest             ; see guide:  https://clojure.org/guides/spec#_sequences
+(verify             ; see guide:  https://clojure.org/guides/spec#_sequences
   (s/def ::ingredient (s/cat ; for a `cat` spec each predicate needs a kw name
                         :quantity number?
                         :unit keyword?))
@@ -339,7 +339,7 @@
   :fn (s/and #(<= (-> % :args :start) (:ret %))
         #(< (:ret %) (-> % :args :end))))
 
-(dotest
+(verify
   (when true
     (stest/instrument `ranged-rand)
     (throws? Exception (ranged-rand 8 5))
@@ -350,7 +350,7 @@
 
 ;-----------------------------------------------------------------------------
 ; A game of cards:  https://clojure.org/guides/spec#_a_game_of_cards
-(dotest
+(verify
   (def suit? #{:club :diamond :heart :spade}) ; remember sets are predicates
   (def rank? (into #{:jack :queen :king :ace} (thru 2 10))) ; remember sets are predicates
   (def deck (forv [suit suit? rank rank?]
@@ -401,7 +401,7 @@
       (gen/fmap #(str "FOO-" %))))
 
 
-  (dotest
+  (verify
     (spy :foo-id (mapv first (s/exercise ::foo-id 10
                                {::foo-id foo-id-gen})))) ; a generator override
 
@@ -417,7 +417,7 @@
          (gen/return %)
          (gen/elements (keys %)))))
 
-  (dotest
+  (verify
     (nl)
     (spyx (mapv first (s/exercise ::lookup)))
     (throws? (mapv first (s/exercise ::lookup-finding-k)))
@@ -461,13 +461,13 @@
   (s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
                                 :gen gen-my-index-of-let))
 
-  (dotest
+  (verify
     (nl) (spyx (s/exercise-fn `my-index-of))
     (nl) (spyx (s/exercise-fn `my-index-of-2))
     (nl) (spyx (s/exercise-fn `my-index-of-3))
     (nl) (spyx (s/exercise-fn `my-index-of-4)))
 
-  (dotest (nl)
+  (verify (nl)
     (spyx (tcgen/sample (tcgen/fmap set (tcgen/vector tcgen/nat))))
     (spyx (tcgen/sample (tcgen/fmap
                           (fn [v]
