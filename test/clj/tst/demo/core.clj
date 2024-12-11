@@ -1,5 +1,6 @@
 (ns tst.demo.core
-  (:use tupelo.core tupelo.test)
+  (:use tupelo.core
+        tupelo.test)
   (:require
     [clojure.set :as set]
     [clojure.spec.alpha :as s]
@@ -126,17 +127,17 @@
 
   ;(is= (s/explain-data ::name-or-id :foo) ; #todo cleanup this
   ;  #:clojure.spec.alpha{:problems
-  ;                              '({:path [:name], ; ### NOTE need to quote list ***
-  ;                                 :pred clojure.core/string?,
-  ;                                 :val  :foo,
-  ;                                 :via  [:tst.tupelo.x.spec/name-or-id],
+  ;                              '({:path [:name] ; ### NOTE need to quote list ***
+  ;                                 :pred clojure.core/string?
+  ;                                 :val  :foo
+  ;                                 :via  [:tst.tupelo.x.spec/name-or-id]
   ;                                 :in   []}
-  ;                                 {:path [:id],
-  ;                                  :pred clojure.core/int?,
-  ;                                  :val  :foo,
-  ;                                  :via  [:tst.tupelo.x.spec/name-or-id],
-  ;                                  :in   []}),
-  ;                       :spec  :tst.tupelo.x.spec/name-or-id,
+  ;                                 {:path [:id]
+  ;                                  :pred clojure.core/int?
+  ;                                  :val  :foo
+  ;                                  :via  [:tst.tupelo.x.spec/name-or-id]
+  ;                                  :in   []})
+  ;                       :spec  :tst.tupelo.x.spec/name-or-id
   ;                       :value :foo})
   )
 
@@ -149,7 +150,7 @@
   (s/def ::last-name string?)
   (s/def ::email ::email-type)
 
-  ; Note `:::qual/person` spec forces use of namespaced keywords in maps.
+  ; Note `::qual/person` spec forces use of namespaced keywords in maps.
   ; Also, note that name of value spec determines map key.
   (s/def :qual/person (s/keys
                         :req [::first-name ::last-name ::email]
@@ -174,13 +175,13 @@
                           :req-un [::first-name ::last-name ::email]
                           :opt-un [::phone]))
   (is= (s/conform :unqual/person {:first-name "Elon" :last-name "Musk" :email "elon@example.com"})
-    {:first-name "Elon", :last-name "Musk", :email "elon@example.com"})
+    {:first-name "Elon" :last-name "Musk" :email "elon@example.com"})
 
   ; a clojure record is like a a map with non-namespaced keywords
   (defrecord Person [first-name last-name email phone])
-  (is (val=         ; <= needed to compare a map & a record
+  (is (val= ; <= needed to compare a map & a record
         (s/conform :unqual/person (->Person "Elon" "Musk" "elon@example.com" nil)) ; returns a Person record
-        {:first-name "Elon", :last-name "Musk", :email "elon@example.com", :phone nil})))
+        {:first-name "Elon" :last-name "Musk" :email "elon@example.com" :phone nil})))
 
 (verify
   (s/def ::id keyword?)
@@ -191,16 +192,16 @@
                     :req [::id ::host]
                     :opt [::port]))
   (is= (s/conform ::server [::id :s1 ::host "example.com" ::port 5555]) ; seq as input instead of a map
-    {::id :s1, ::host "example.com", ::port 5555}))
+    {::id :s1 ::host "example.com" ::port 5555}))
 
-(verify             ; can merge 2 specs to generate a combined spec
+(verify   ; can merge 2 specs to generate a combined spec
   (s/def :animal/kind string?)
   (s/def :animal/says string?)
   (s/def :animal/common (s/keys :req [:animal/kind :animal/says])) ; common keys for any animal
   (s/def :dog/tail? boolean?)
   (s/def :dog/breed string?)
   (s/def :animal/dog (s/merge :animal/common
-                       (s/keys :req [:dog/tail? :dog/breed]))) ; merge in additional keys to create dog spec
+                              (s/keys :req [:dog/tail? :dog/breed]))) ; merge in additional keys to create dog spec
   (is (s/valid? :animal/dog {:animal/kind "dog"
                              :animal/says "woof"
                              :dog/tail?   true
@@ -240,30 +241,36 @@
   ;                                   :in     []}],
   ;                       :spec     :event/event,
   ;                       :value    #:event{:type :event/restart}})
+  )
 
-  (do ; See guide:  https://clojure.org/guides/spec#_collections
-    (is= (s/conform (s/coll-of keyword?) [:a :b :c]) [:a :b :c])
-    (is= (s/conform (s/coll-of number?) [1 2 3]) [1 2 3])
+(verify ; See guide:  https://clojure.org/guides/spec#_collections
+  (is= (s/conform (s/coll-of keyword?) [:a :b :c])
+    [:a :b :c])
+  (is= (s/conform (s/coll-of number?) [1 2 3])
+    [1 2 3])
 
-    (s/def ::vnum3 (s/coll-of number? :kind vector? :count 3 :distinct true :into #{}))
-    (is= (s/conform ::vnum3 [1 2 3]) #{1 2 3})
-    (is= (s/conform ::vnum3 #{1 2 3}) :clojure.spec.alpha/invalid)
-    (is= (s/conform ::vnum3 [1 1 1]) :clojure.spec.alpha/invalid)
-    (is= (s/conform ::vnum3 [1 2 :a]) :clojure.spec.alpha/invalid)
+  (s/def ::vnum3 (s/coll-of number? :kind vector? :count 3 :distinct true :into #{}))
+  (is= (s/conform ::vnum3 [1 2 3]) #{1 2 3})
+  (is= (s/conform ::vnum3 #{1 2 3}) :clojure.spec.alpha/invalid)
+  (is= (s/conform ::vnum3 [1 1 1]) :clojure.spec.alpha/invalid)
+  (is= (s/conform ::vnum3 [1 2 :a]) :clojure.spec.alpha/invalid)
 
-    (s/def ::point (s/tuple double? double? double?))
-    (is= (s/conform ::point [1.5 2.0 3.1]) [1.5 2.0 3.1])
+  (s/def ::point (s/tuple double? double? double?))
+  (is= (s/conform ::point [1.5 2.0 3.1]) [1.5 2.0 3.1])
 
-    (s/def ::scores (s/map-of string? int?)) ; every entry is string -> int
-    (is= (s/conform ::scores {"Sally" 1000 "joe" 500}) {"Sally" 1000 "joe" 500})))
+  (s/def ::scores (s/map-of string? int?)) ; every entry is string -> int
+  (is= (s/conform ::scores {"Sally" 1000
+                            "joe" 500})
+    {"Sally" 1000
+     "joe" 500}))
 
-(verify             ; see guide:  https://clojure.org/guides/spec#_sequences
+(verify   ; see guide:  https://clojure.org/guides/spec#_sequences
   (s/def ::ingredient (s/cat ; for a `cat` spec each predicate needs a kw name
                         :quantity number?
                         :unit keyword?))
   (is (s/valid? ::ingredient [2 :teaspoon]))
   (is= (s/conform ::ingredient [2 :teaspoon])
-    {:quantity 2, :unit :teaspoon}) ; conform outputs as mape with [name value] pairs
+    {:quantity 2 :unit :teaspoon}) ; conform outputs as map with [name value] pairs
 
   (s/def ::seq-of-keywords (s/* keyword?))
   (is= (s/conform ::seq-of-keywords [:a :b :c]) [:a :b :c])
@@ -279,17 +286,17 @@
   ; ::opts are alternating pairs of keyword & boolean
   (s/def ::opts (s/* (s/cat :opt keyword? :val boolean?)))
   (is= (s/conform ::opts [:silent false :verbose true])
-    [{:opt :silent, :val false}
-     {:opt :verbose, :val true}])
+    [{:opt :silent :val false}
+     {:opt :verbose :val true}])
 
   ; a property/value pair. prop is a string. value can be string or boolean
   (s/def ::config (s/* (s/cat
                          :prop string?
                          :val (s/alt :s string? :b boolean?))))
   (is= (s/conform ::config ["-server" "foo" "-verbose" true "-user" "joe"])
-    [{:prop "-server", :val [:s "foo"]}
-     {:prop "-verbose", :val [:b true]}
-     {:prop "-user", :val [:s "joe"]}])
+    [{:prop "-server" :val [:s "foo"]}
+     {:prop "-verbose" :val [:b true]}
+     {:prop "-user" :val [:s "joe"]}])
 
   (is= (s/describe ::seq-of-keywords)
     '(* keyword?))
@@ -313,15 +320,15 @@
       :nums-kw #{:nums}
       :nums (s/spec (s/* number?))))
   (is= (s/conform ::nested [:names ["a" "b"] :nums [1 2 3]])
-    {:names-kw :names, :names ["a" "b"], :nums-kw :nums, :nums [1 2 3]})
+    {:names-kw :names :names ["a" "b"] :nums-kw :nums :nums [1 2 3]})
 
   (s/def ::unnested
     (s/cat :names-kw #{:names}
-      :names (s/* string?)
-      :nums-kw #{:nums}
-      :nums (s/* number?)))
+           :names (s/* string?)
+           :nums-kw #{:nums}
+           :nums (s/* number?)))
   (is= (s/conform ::unnested [:names "a" "b" :nums 1 2 3])
-    {:names-kw :names, :names ["a" "b"], :nums-kw :nums, :nums [1 2 3]}))
+    {:names-kw :names :names ["a" "b"] :nums-kw :nums :nums [1 2 3]}))
 
 ;-----------------------------------------------------------------------------
 ; function specs:  https://clojure.org/guides/spec#_specing_functions
@@ -331,13 +338,13 @@
   (+ start (long (rand (- end start)))))
 
 (s/fdef ranged-rand
-  :args (s/and
-          (s/cat :start int?
-            :end int?)
-          #(< (:start %) (:end %) 1e9)) ; need add 1e9 limit to avoid integer overflow
-  :ret int?
-  :fn (s/and #(<= (-> % :args :start) (:ret %))
-        #(< (:ret %) (-> % :args :end))))
+        :args (s/and
+                (s/cat :start int?
+                       :end int?)
+                #(< (:start %) (:end %) 1e9)) ; need add 1e9 limit to avoid integer overflow
+        :ret int?
+        :fn (s/and #(<= (-> % :args :start) (:ret %))
+                   #(< (:ret %) (-> % :args :end))))
 
 (verify
   (when true
@@ -354,9 +361,9 @@
   (def suit? #{:club :diamond :heart :spade}) ; remember sets are predicates
   (def rank? (into #{:jack :queen :king :ace} (thru 2 10))) ; remember sets are predicates
   (def deck (forv [suit suit? rank rank?]
-              [rank suit]))
+                  [rank suit]))
   (is (set/subset? #{[2 :club] [5 :diamond] [:queen :heart]}
-        (into #{} deck)))
+                   (into #{} deck)))
 
   (s/def ::card (s/tuple rank? suit?))
   (s/def ::hand (s/* ::card))
@@ -393,7 +400,7 @@
 
 ;-----------------------------------------------------------------------------
 ; examples from: Clojure spec Screencast - Customizing Generators: https://youtu.be/WoFkhE92fqc
-(when false         ; #todo finish this
+(when false ; #todo finish this
 
   (s/def ::foo-id (s/and string? #(str/starts-with? % "FOO-")))
   (defn foo-id-gen []
@@ -403,19 +410,19 @@
 
   (verify
     (spy :foo-id (mapv first (s/exercise ::foo-id 10
-                               {::foo-id foo-id-gen})))) ; a generator override
+                                         {::foo-id foo-id-gen})))) ; a generator override
 
   ; Lookup
   (s/def ::lookup (s/map-of keyword? string? :min-count 1))
   (s/def ::lookup-finding-k (s/and (s/cat
                                      :lookup ::lookup
                                      :k keyword?)
-                              (fn [{:keys [lookup k]}] (contains? lookup k))))
+                                   (fn [{:keys [lookup k]}] (contains? lookup k))))
   (defn lookup-finding-k-gen []
     (gen/bind (s/gen ::lookup)
-      #(gen/tuple
-         (gen/return %)
-         (gen/elements (keys %)))))
+              #(gen/tuple
+                 (gen/return %)
+                 (gen/elements (keys %)))))
 
   (verify
     (nl)
@@ -438,18 +445,18 @@
                                       (s/gen string-and-substring-model)))
   (s/def ::my-index-of-args (s/cat :source string? :tgt string?))
   (s/fdef my-index-of-2 :args (s/spec ::my-index-of-args
-                                :gen gen-string-and-substring))
+                                      :gen gen-string-and-substring))
 
   (defn gen-my-index-of-args []
     (gen/one-of [(gen-string-and-substring)
                  (s/gen ::my-index-of-args)]))
   (s/fdef my-index-of-3 :args (s/spec ::my-index-of-args
-                                :gen gen-my-index-of-args))
+                                      :gen gen-my-index-of-args))
 
   (defn gen-string-and-substring-let []
     ; RHS must be tcgen/* generator fns
     (tcgen/let [prefix tcgen/string-alphanumeric
-                tgt tcgen/string-alphanumeric
+                tgt    tcgen/string-alphanumeric
                 suffix tcgen/string-alphanumeric]
       (let [search-str (str prefix tgt suffix)
             result     [search-str tgt]]
@@ -459,7 +466,7 @@
                  ;(s/gen ::my-index-of-args)
                  ]))
   (s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
-                                :gen gen-my-index-of-let))
+                                      :gen gen-my-index-of-let))
 
   (verify
     (nl) (spyx (s/exercise-fn `my-index-of))
@@ -468,9 +475,9 @@
     (nl) (spyx (s/exercise-fn `my-index-of-4)))
 
   (verify (nl)
-    (spyx (tcgen/sample (tcgen/fmap set (tcgen/vector tcgen/nat))))
-    (spyx (tcgen/sample (tcgen/fmap
-                          (fn [v]
-                            [(rand-nth v) v])
-                          (tcgen/not-empty (tcgen/vector tcgen/nat)))))))
+          (spyx (tcgen/sample (tcgen/fmap set (tcgen/vector tcgen/nat))))
+          (spyx (tcgen/sample (tcgen/fmap
+                                (fn [v]
+                                  [(rand-nth v) v])
+                                (tcgen/not-empty (tcgen/vector tcgen/nat)))))))
 
