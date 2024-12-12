@@ -243,7 +243,7 @@
   ;                       :value    #:event{:type :event/restart}})
   )
 
-(verify ; See guide:  https://clojure.org/guides/spec#_collections
+(verify   ; See guide:  https://clojure.org/guides/spec#_collections
   (is= (s/conform (s/coll-of keyword?) [:a :b :c])
     [:a :b :c])
   (is= (s/conform (s/coll-of number?) [1 2 3])
@@ -260,9 +260,9 @@
 
   (s/def ::scores (s/map-of string? int?)) ; every entry is string -> int
   (is= (s/conform ::scores {"Sally" 1000
-                            "joe" 500})
+                            "joe"   500})
     {"Sally" 1000
-     "joe" 500}))
+     "joe"   500}))
 
 (verify   ; see guide:  https://clojure.org/guides/spec#_sequences
   (s/def ::ingredient (s/cat ; for a `cat` spec each predicate needs a kw name
@@ -320,7 +320,10 @@
       :nums-kw #{:nums}
       :nums (s/spec (s/* number?))))
   (is= (s/conform ::nested [:names ["a" "b"] :nums [1 2 3]])
-    {:names-kw :names :names ["a" "b"] :nums-kw :nums :nums [1 2 3]})
+    {:names-kw :names
+     :names    ["a" "b"]
+     :nums-kw  :nums
+     :nums     [1 2 3]})
 
   (s/def ::unnested
     (s/cat :names-kw #{:names}
